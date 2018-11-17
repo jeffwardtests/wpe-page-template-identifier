@@ -1,4 +1,29 @@
-/**
- * Admin CSS will live here 
- *
- */
+/** Archive table page **/
+.table-notification {
+  background: #ECECEC;
+  border: 1px solid #CCC;
+  padding: 0 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+#items-table tr td.id, #items-table tr th.column-id {
+  width: 5%;
+}
+#items-table tr td.title, #items-table tr th.column-title {
+  width: 35%;
+}
+#items-table tr td.thumbnail, #items-table tr th.column-thumbnail {
+  width: 80px;
+  text-align: center;
+}
+#items-table tr td.date, #items-table tr th.column-date {
+  width: 16%;
+}
+#items-table tr td.count, #items-table tr th.column-count {
+  width: 20%;
+  text-align: right;
+}
+
+/** Options page **/

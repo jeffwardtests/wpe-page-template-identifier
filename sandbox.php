@@ -48,13 +48,16 @@ function render_wpe_pti_admin_sandbox(){
      'public'   => true,
      '_builtin' => false
   );
+  $ignore_types = array();
   $selected_post_type = (isset($_REQUEST['post_type'])) ? sanitize_text_field($_REQUEST['post_type']) : 'page';
   $post_types = get_post_types( $args, $output = 'names', $operator = 'or' );
   if(!empty($post_types)){
     echo '<select name="post_type_select">';
     foreach ( $post_types  as $post_type ) {
-      $selected = ($selected_post_type == $post_type) ? 'selected="selected"' : '';
-       echo '<option '.$selected.' value="'.$post_type.'">' . $post_type . '</p>';
+      if(!in_array($post_type, $ignore_types)){
+        $selected = ($selected_post_type == $post_type) ? 'selected="selected"' : '';
+         echo '<option '.$selected.' value="'.$post_type.'">' . $post_type . '</p>';
+      }
     }
     echo '<select>';
   }
@@ -196,10 +199,10 @@ function render_wpe_pti_admin(){
         ?>
         <h2><?php _e('WPEngine Page Template Identifier'); ?></h2>
 
-        <div style="background:#ECECEC;border:1px solid #CCC;padding:0 10px;margin-top:5px;border-radius:5px;-moz-border-radius:5px;-webkit-border-radius:5px;">
+        <div class="table-notification">
             <p>This page lists all of the page templates used for this website.</p>
-            <?php /* ?><p>Theme location: <code><?php echo TEMPLATEPATH . '/'; ?></code></p><?php */ ?>
-            <p>Theme location: <code><?php echo STYLESHEETPATH . '/'; ?></code></p>
+            <?php /* ?><p>Parent directory: <code><?php echo TEMPLATEPATH . '/'; ?></code></p><?php */ ?>
+            <p>Parent directory: <code><?php echo STYLESHEETPATH . '/'; ?></code></p>
         </div>
 
         <?php # Table ?>
@@ -231,6 +234,13 @@ function render_wpe_pti_admin(){
         </form>
 
       </div><!-- .wrap -->
+      <script>
+        jQuery(document).ready(function($){
+          $('#select-post-type').on('click', function(e){
+            // console.log('woot');
+          });
+        });
+      </script>
     <?php
   }
 
@@ -285,7 +295,7 @@ function render_wpe_pti_admin(){
        $columns = array(
            'cb' => '<input type="checkbox" />', // Render a checkbox instead of text
            'title' => 'Template name',
-           'slug' => 'Template location',
+           'slug' => 'File location',
            'count' => 'Attached pages',
            // 'date' => 'Date',
        );
@@ -323,6 +333,9 @@ function render_wpe_pti_admin(){
         # Get the current page
         $page_slug = (isset($_REQUEST['page'])) ? sanitize_text_field($_REQUEST['page']) : '';
 
+        # Get the selected post type
+        $template_post_type = (isset($_REQUEST['post_type'])) ? sanitize_text_field($_REQUEST['post_type']) : 'page';
+
         # Row action labels
         $view_label = 'View attached pages';
         $edit_label = 'Edit';
@@ -330,18 +343,21 @@ function render_wpe_pti_admin(){
 
          # Build row actions
          $actions = array(
-             'view' => sprintf('<a href="?page=%s&template=%s">%s</a>', $page_slug, $item['id'], $view_label),
-             // 'edit' => sprintf('<a href="?page=%s&action=%s&id=%s">%s</a>', $page_slug, 'edit', $item['id'], $edit_label),
+            'view' => sprintf('<a href="?page=%s&template=%s&post_type=%s">%s</a>', $page_slug, $item['id'], $template_post_type, $view_label),
+            // 'edit' => sprintf('<a href="?page=%s&action=%s&id=%s">%s</a>', $page_slug, 'edit', $item['id'], $edit_label),
          );
+
+         # Add delete row action
          if(!empty($item['id']) && $item['id'] != 'default'){
            $actions['delete'] = sprintf('<a href="?page=%s&action=%s&id=%s">%s</a>', $page_slug, 'delete', $item['id'], $delete_label);
          }
 
          # Return the title column contents
-         return sprintf('<a href="?page=%1$s&template=%2$s">%3$s</a> %4$s',
+         return sprintf('<a href="?page=%1$s&template=%2$s&post_type=%3$s">%4$s</a> %5$s',
              /*$1%s*/ $page_slug,
              /*$2%s*/ $item['id'],
-             /*$3%s*/ $item['title'],
+             /*$3%s*/ $template_post_type,
+             /*$4%s*/ $item['title'],
              /*$4%s*/ $this->row_actions($actions)
          );
 
@@ -381,6 +397,10 @@ function render_wpe_pti_admin(){
              $ids = (is_array($ids)) ? implode(',', $ids) : $ids;
 
 
+
+
+             // comeback
+
              // Delete logic goes here
              // DELETE FROM ...
 
@@ -389,6 +409,7 @@ function render_wpe_pti_admin(){
           			<p>The following templates have been detached: '.$ids.'</a></p>
           		</div>
               ';
+              print_r($ids);
 
            }
 
@@ -402,6 +423,9 @@ function render_wpe_pti_admin(){
       # Render row cells
      ///////////////////////
      function column_default($item, $column_name){
+
+        # Get the current post_type
+        $template_post_type = (isset($_REQUEST['post_type'])) ? sanitize_text_field($_REQUEST['post_type']) : 'page';
 
          switch($column_name){
 
@@ -420,8 +444,11 @@ function render_wpe_pti_admin(){
               # Get the current page
               $page_slug = (isset($_REQUEST['page'])) ? sanitize_text_field($_REQUEST['page']) : '';
 
-              $count = $this->count_total_attached($item['slug']);
-              return sprintf('<a href="?page=%s&template=%s">%s</a>', $page_slug, $item['id'], $count);
+              # Get the count
+              $count = $this->count_total_attached($item['slug'], $template_post_type);
+
+              # Return the count
+              return sprintf('<a href="?page=%s&template=%s&post_type=%s">%s</a>', $page_slug, $item['id'], $template_post_type, $count);
 
               break;
 
@@ -550,14 +577,21 @@ function render_wpe_pti_admin(){
               );
               $post_types = get_post_types( $args, $output = 'objects', $operator = 'or' );
 
+              # Setup ignored post types
+              $ignore_types = array(
+                'attachment'
+              );
+
               # List the post types
               if(!empty($post_types)){
-                echo '<select id="post-type-selector" name="post_type" style="float: none;">';
+                echo '<select id="post-type-selector" name="set_post_type" style="float: none;">';
                 foreach ( $post_types  as $post_type_obj ) {
                   $post_type = $post_type_obj->name;
-                  $post_type_label = $post_type_obj->label;
-                  $selected = ($selected_post_type == $post_type) ? 'selected="selected"' : '';
-                   echo '<option '.$selected.' value="'.$post_type.'">' . $post_type_label . '</p>';
+                  if(!in_array($post_type, $ignore_types)){
+                    $post_type_label = $post_type_obj->label;
+                    $selected = ($selected_post_type == $post_type) ? 'selected="selected"' : '';
+                    echo '<option '.$selected.' value="'.$post_type.'">' . $post_type_label . '</p>';
+                   }
                 }
                 echo '<select>';
               }
@@ -656,7 +690,7 @@ function render_wpe_pti_admin(){
     if($id == 'default'){
 
       $template_name = 'Default';
-      $template_post_types = '(template not selected)';
+      $template_post_types = '(no template)';
 
     # Grab the template info
     } else {
@@ -673,7 +707,7 @@ function render_wpe_pti_admin(){
         $template_name = $matches[1];
 
         preg_match('|Template Post Type:(.*)$|mi', $file_contents, $matches);
-        $template_post_types = '(connected post types: ' . $matches[1] . ')';
+        $template_post_types = '(available for: ' . $matches[1] . ')';
 
       }
 
@@ -691,6 +725,12 @@ function render_wpe_pti_admin(){
         <span><?php echo $template_name; ?></span>
         <small><?php echo $template_post_types; ?></small>
       </h2>
+
+      <div class="table-notification">
+          <p>
+            <a href="<?php echo get_admin_url() . 'admin.php?page=wpe-page-templates'; ?>">&larr; Back to all templates</a>
+          </p>
+      </div>
 
       <?php
 
@@ -998,6 +1038,9 @@ function render_wpe_pti_admin(){
        ///////////////////////
        function column_default($item, $column_name){
 
+          # Set the post id
+          $post_id = $item['ID'];
+
            switch($column_name){
 
              /////////////
@@ -1005,7 +1048,7 @@ function render_wpe_pti_admin(){
              /////////////
              case 'id':
              case 'ID':
-                 return $item['ID'];
+                 return $post_id;
                  break;
 
              /////////////
@@ -1014,12 +1057,15 @@ function render_wpe_pti_admin(){
              case 'thumbnail':
              case 'post_thumbnail':
 
+                 $edit_link = get_edit_post_link($post_id);
+
                  # Return the thumbnail
-                 $thumbnail_id = get_post_thumbnail_id( $item['ID'] );
+                 $thumbnail_id = get_post_thumbnail_id( $post_id );
                  // $thumbnail_src =  wp_get_attachment_url($thumbnail_id);
                  $thumbnail_src =  wp_get_attachment_thumb_url($thumbnail_id);
                  $display_thumbnail = (!empty($thumbnail_src)) ? '<img src="'.$thumbnail_src.'" width="60" />' : '';
-                 return '<div class="thumb">'.$display_thumbnail.'</div>';
+
+                 return '<a href="'.$edit_link.'"><div class="thumb">'.$display_thumbnail.'</div></a>';
                  break;
 
 
@@ -1064,13 +1110,6 @@ function render_wpe_pti_admin(){
        }
 
 
-      //////////////////////////////////////
-      # Append post types dropdown select
-      //////////////////////////////////////
-      // https://stackoverflow.com/questions/23859559/
-      protected function extra_tablenav( $which ) {
-        // keep empty
-      }
 
      ////////////////////////
      # Get results
@@ -1089,6 +1128,9 @@ function render_wpe_pti_admin(){
          $paged = (isset($_GET['page'])) ? sanitize_text_field($_GET['page']) : $current_page;
          $paged = (isset($_GET['paged'])) ? sanitize_text_field($_GET['paged']) : $current_page;
          $paged = (isset($args['paged'])) ? $args['paged'] : $paged;
+
+         # Setup post type
+         $post_type = (isset($_GET['post_type'])) ? sanitize_text_field($_GET['post_type']) : 'page';
 
          # Setup pagination parameters
          $per_page = (isset($args['per_page'])) ? $args['per_page'] : 10;
@@ -1113,6 +1155,7 @@ function render_wpe_pti_admin(){
           INNER JOIN {$wpdb->postmeta} AS _pm
             ON (_p.ID = _pm.post_id)
           WHERE 1=1
+          AND _p.post_type = %s
           AND _pm.meta_key = '_wp_page_template'
           AND _pm.meta_value = %s
         ";
@@ -1120,12 +1163,13 @@ function render_wpe_pti_admin(){
          $query_limit = " LIMIT {$per_page} OFFSET {$offset} ";
 
          # Count the total
-         $prepared_total = $wpdb->prepare(" SELECT COUNT(*) " . $sql, $template_slug);
+         $prepared_total = $wpdb->prepare(" SELECT COUNT(*) " . $sql, $post_type, $template_slug);
          $total = $wpdb->get_var($prepared_total);
 
          # Get the data
          $prepared = $wpdb->prepare(
              " SELECT * " . $sql . $query_orderby . $query_limit,
+             $post_type,
              $template_slug
          );
          $results = $wpdb->get_results($prepared);
@@ -1150,4 +1194,121 @@ function render_wpe_pti_admin(){
        }
 
     }
+
+
+
+add_action('admin_init', 'admin_set_post_type');
+function admin_set_post_type(){
+  if(isset($_POST['set_post_type']) && $_POST['set_post_type'] != $_GET['post_type'] && !headers_sent()){
+
+    # Get the full page URL - https://stackoverflow.com/questions/6768793/
+    $full_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'
+      ? "https"
+      : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+
+    $full_url = remove_query_arg( array('post_type', 'paged'), $full_url );
+    $new_url = add_query_arg( 'post_type', $_POST['set_post_type'], $full_url );
+
+    # Redirect to the new URL
+    wp_redirect( $new_url );
+    exit;
+
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
+    * Creating a function to create our CPT
+    */
+
+    function custom_post_type() {
+
+    // Set UI labels for Custom Post Type
+        $labels = array(
+            'name'                => _x( 'Movies', 'Post Type General Name', 'twentythirteen' ),
+            'singular_name'       => _x( 'Movie', 'Post Type Singular Name', 'twentythirteen' ),
+            'menu_name'           => __( 'Movies', 'twentythirteen' ),
+            'parent_item_colon'   => __( 'Parent Movie', 'twentythirteen' ),
+            'all_items'           => __( 'All Movies', 'twentythirteen' ),
+            'view_item'           => __( 'View Movie', 'twentythirteen' ),
+            'add_new_item'        => __( 'Add New Movie', 'twentythirteen' ),
+            'add_new'             => __( 'Add New', 'twentythirteen' ),
+            'edit_item'           => __( 'Edit Movie', 'twentythirteen' ),
+            'update_item'         => __( 'Update Movie', 'twentythirteen' ),
+            'search_items'        => __( 'Search Movie', 'twentythirteen' ),
+            'not_found'           => __( 'Not Found', 'twentythirteen' ),
+            'not_found_in_trash'  => __( 'Not found in Trash', 'twentythirteen' ),
+        );
+
+    // Set other options for Custom Post Type
+
+        $args = array(
+            'label'               => __( 'movies', 'twentythirteen' ),
+            'description'         => __( 'Movie news and reviews', 'twentythirteen' ),
+            'labels'              => $labels,
+            // Features this CPT supports in Post Editor
+            'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'revisions', 'custom-fields', ),
+            // You can associate this CPT with a taxonomy or custom taxonomy.
+            'taxonomies'          => array( 'genres' ),
+            /* A hierarchical CPT is like Pages and can have
+            * Parent and child items. A non-hierarchical CPT
+            * is like Posts.
+            */
+            'hierarchical'        => false,
+            'public'              => true,
+            'show_ui'             => true,
+            'show_in_menu'        => true,
+            'show_in_nav_menus'   => true,
+            'show_in_admin_bar'   => true,
+            'menu_position'       => 5,
+            'can_export'          => true,
+            'has_archive'         => true,
+            'exclude_from_search' => false,
+            'publicly_queryable'  => true,
+            'capability_type'     => 'page',
+        );
+
+        // Registering your Custom Post Type
+        register_post_type( 'movies', $args );
+
+    }
+
+    /* Hook into the 'init' action so that the function
+    * Containing our post type registration is not
+    * unnecessarily executed.
+    */
+
+    add_action( 'init', 'custom_post_type', 0 );
+
+
 ?>
