@@ -20,7 +20,18 @@
 /////////////////////////////////////
 # Do not call this file directly
 /////////////////////////////////////
-if( ! defined( 'WPINC' ) ) die;
+if( !defined( 'WPINC' ) ) die;
+
+
+
+#######################################
+
+# TEMPORARY: Add sandbox for playing & debugging
+require_once plugin_dir_path( __FILE__ ) . 'sandbox.php';
+
+#######################################
+
+
 
 ///////////////////////////
 # Current plugin version
