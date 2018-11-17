@@ -15,16 +15,47 @@ function add_wpe_pti_admin(){
 function render_wpe_pti_admin(){
 
   //////////////////////////
+  # Parse url
+  //////////////////////////
+  echo '<h3>Parse url</h3>';
+
+  # Get the full page URL - https://stackoverflow.com/questions/6768793/
+  $full_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'
+    ? "https"
+    : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+
+  $full_url = remove_query_arg( 'template_slug', $full_url );
+  $full_url = add_query_arg( 'template_slug', urlencode('test/init.php'), $full_url );
+
+  echo $full_url;
+
+  //////////////////////////
+  # Get url encoded value
+  //////////////////////////
+  echo '<h3>Get url encoded value</h3>';
+  $template_slug = (isset($_GET['template_slug'])) ? sanitize_text_field($_GET['template_slug']) : 'default';
+
+  echo $template_slug;
+
+
+  //////////////////////////
   # Get all post types
   //////////////////////////
+  echo '<hr />';
   echo '<h3>All post types</h3>';
   $args = array(
      'public'   => true,
      '_builtin' => false
   );
+  $selected_post_type = (isset($_REQUEST['post_type'])) ? sanitize_text_field($_REQUEST['post_type']) : 'page';
   $post_types = get_post_types( $args, $output = 'names', $operator = 'or' );
-  foreach ( $post_types  as $post_type ) {
-     echo '<p>' . $post_type . '</p>';
+  if(!empty($post_types)){
+    echo '<select name="post_type_select">';
+    foreach ( $post_types  as $post_type ) {
+      $selected = ($selected_post_type == $post_type) ? 'selected="selected"' : '';
+       echo '<option '.$selected.' value="'.$post_type.'">' . $post_type . '</p>';
+    }
+    echo '<select>';
   }
 
   //////////////////////////
@@ -33,9 +64,28 @@ function render_wpe_pti_admin(){
   echo '<hr />';
   echo '<h3>All templates</h3>';
 
+  # Get the full page URL - https://stackoverflow.com/questions/6768793/
+  $full_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'
+    ? "https"
+    : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+
+  # Remove the template slug parameter from the URL
+  $full_url = remove_query_arg( 'template_slug', $full_url );
+
+  # Get the templates
   $templates = get_page_templates( $current_post = null, $template_post_type = 'page' );
+
+  # Append default to the templates
+  $templates = array_merge(array('(no template)' => 'default'), $templates);
+
+  # Loop through each template and provide a link
   foreach ( $templates as $template_name => $template_filename ) {
-    echo "$template_name ($template_filename)<br />";
+
+    # Add the template slug parameter to the new URL
+    $template_link = add_query_arg( 'template_slug', urlencode($template_filename), $full_url );
+
+    echo "{$template_name} (<a href='{$template_link}'>{$template_filename}</a>)<br />";
+
   }
 
   echo '<pre>';
