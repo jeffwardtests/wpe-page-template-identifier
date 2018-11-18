@@ -1,29 +1,76 @@
 /** Archive table page **/
-.table-notification {
+@media all and (min-width: 782px){
+  #items-table.wpe-pti tr td.id, #items-table.wpe-pti tr th.column-id {
+    width: 5%;
+  }
+  #items-table.wpe-pti tr td.title, #items-table.wpe-pti tr th.column-title {
+    width: 35%;
+  }
+  #items-table.wpe-pti tr td.thumbnail, #items-table.wpe-pti tr th.column-thumbnail {
+    width: 80px;
+    text-align: center;
+  }
+  #items-table.wpe-pti tr td.thumbnail .thumb {
+    background: #eaeaea;
+    width: 60px;
+    height: 60px;
+  }
+  #items-table.wpe-pti tr td.thumbnail .thumb a {
+    display: block;
+  }
+  #items-table.wpe-pti tr td.thumbnail .thumb img {
+    width: 100%;
+    height: auto;
+  }
+  #items-table.wpe-pti tr td.date, #items-table.wpe-pti tr th.column-date {
+    width: 16%;
+  }
+  #items-table.wpe-pti tr td.count, #items-table.wpe-pti tr th.column-count {
+    width: 20%;
+    text-align: right;
+  }
+  .wp-list-table tr td.page_template, .wp-list-table tr th.column-page_template {
+    width: 24%;
+  }
+}
+@media all and (max-width: 782px){
+  #items-table.wpe-pti tr td.thumbnail {
+      display: none;
+  }
+  #items-table.wpe-pti tr td.title {
+      display: block;
+  }
+}
+
+/** Settings page **/
+.notification-box {
   background: #ECECEC;
   border: 1px solid #CCC;
   padding: 0 10px;
-  margin-top: 5px;
+  margin: 5px 0 20px;
   border-radius: 5px;
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
 }
-#items-table tr td.id, #items-table tr th.column-id {
-  width: 5%;
+.text-faded {
+  color: #555;
 }
-#items-table tr td.title, #items-table tr th.column-title {
-  width: 35%;
+.settings-row {
+  position: relative;
+  margin-bottom: 10px;
 }
-#items-table tr td.thumbnail, #items-table tr th.column-thumbnail {
-  width: 80px;
-  text-align: center;
+.settings-row label.radio-select + label.radio-select {
+  margin-left: 10px;
 }
-#items-table tr td.date, #items-table tr th.column-date {
-  width: 16%;
+.settings-row label:not(.radio-select) {
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: middle;
+  min-width: 240px;
 }
-#items-table tr td.count, #items-table tr th.column-count {
-  width: 20%;
-  text-align: right;
+.settings-row input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]), .settings-row textarea, .settings-row select {
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: middle;
+  width: 75%;
 }
-
-/** Options page **/

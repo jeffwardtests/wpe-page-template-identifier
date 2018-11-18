@@ -3,16 +3,18 @@
 */
 (function( $ ) {
 	'use strict';
-
-
-	/////////////////////////////
-	// Admin area scripts
-	/////////////////////////////
-
 	$(document).ready(function() {
-
-		console.log('hello world.');
+			
+			///////////////////////////////////
+			// Settings page JavaScript
+			///////////////////////////////////
+			$('button[name="revert"]').on('click', function(e){
+					var conf = confirm("Are you sure you want to revert these settings?");
+					if(conf != true) {
+						e.preventDefault();
+						return false;
+					}
+			});
 
 	});
-
 })( jQuery );

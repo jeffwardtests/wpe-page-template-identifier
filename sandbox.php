@@ -143,10 +143,10 @@ function render_wpe_pti_admin_sandbox(){
     INNER JOIN {$wpdb->postmeta} AS _pm
       ON (_p.ID = _pm.post_id)
     WHERE 1=1
-    AND _pm.meta_key = '_wp_page_template'
-    AND _pm.meta_value = %s
-    AND _p.post_type = %s
-    AND _p.post_status = %s
+      AND _pm.meta_key = '_wp_page_template'
+      AND _pm.meta_value = %s
+      AND _p.post_type = %s
+      AND _p.post_status = %s
   ";
   $prepared = $wpdb->prepare(
       $sql,
@@ -199,14 +199,14 @@ function render_wpe_pti_admin(){
         ?>
         <h2><?php _e('WPEngine Page Template Identifier'); ?></h2>
 
-        <div class="table-notification">
-            <p>This page lists all of the page templates used for this website.</p>
+        <div class="notification-box">
+            <p><?php _e('This page lists all of the page templates used for the website.'); ?></p>
             <?php /* ?><p>Parent directory: <code><?php echo TEMPLATEPATH . '/'; ?></code></p><?php */ ?>
-            <p>Parent directory: <code><?php echo STYLESHEETPATH . '/'; ?></code></p>
+            <p><?php _e('Parent directory:'); ?> <code><?php echo STYLESHEETPATH . '/'; ?></code></p>
         </div>
 
         <?php # Table ?>
-        <form id="items-table" method="post">
+        <form id="items-table" class="wpe-pti" method="post">
 
             <?php # Include nonce ?>
             <?php // wp_nonce_field( 'wpe_pti_table', 'wpe_pti_table' ); ?>
@@ -234,13 +234,6 @@ function render_wpe_pti_admin(){
         </form>
 
       </div><!-- .wrap -->
-      <script>
-        jQuery(document).ready(function($){
-          $('#select-post-type').on('click', function(e){
-            // console.log('woot');
-          });
-        });
-      </script>
     <?php
   }
 
@@ -398,7 +391,6 @@ function render_wpe_pti_admin(){
 
 
 
-
              // comeback
 
              // Delete logic goes here
@@ -406,7 +398,7 @@ function render_wpe_pti_admin(){
 
              echo '
               <div class="updated">
-          			<p>The following templates have been detached: '.$ids.'</a></p>
+          			<p>'.sprintf(__('The following templates have been detached: %s'), $ids).'</a></p>
           		</div>
               ';
               print_r($ids);
@@ -429,9 +421,9 @@ function render_wpe_pti_admin(){
 
          switch($column_name){
 
-           /////////////
+           /////////////////
            # Path (slug)
-           /////////////
+           /////////////////
            case 'slug':
                return $item['slug'];
                break;
@@ -607,7 +599,7 @@ function render_wpe_pti_admin(){
     ///////////////////////////////////////
     # Count number of attached pages
     ///////////////////////////////////////
-    function count_total_attached($template_slug = 'default', $post_type = null) {
+    private function count_total_attached($template_slug = 'default', $post_type = null) {
 
         global $wpdb;
         $sql = "
@@ -615,8 +607,8 @@ function render_wpe_pti_admin(){
           INNER JOIN {$wpdb->postmeta} AS _pm
             ON (_p.ID = _pm.post_id)
           WHERE 1=1
-          AND _pm.meta_key = '_wp_page_template'
-          AND _pm.meta_value = %s
+            AND _pm.meta_key = '_wp_page_template'
+            AND _pm.meta_value = %s
         ";
 
         # Prepare the query
@@ -707,7 +699,7 @@ function render_wpe_pti_admin(){
         $template_name = $matches[1];
 
         preg_match('|Template Post Type:(.*)$|mi', $file_contents, $matches);
-        $template_post_types = '(available for: ' . $matches[1] . ')';
+        $template_post_types = '(post types available: ' . $matches[1] . ')';
 
       }
 
@@ -726,9 +718,11 @@ function render_wpe_pti_admin(){
         <small><?php echo $template_post_types; ?></small>
       </h2>
 
-      <div class="table-notification">
+      <div class="notification-box">
           <p>
-            <a href="<?php echo get_admin_url() . 'admin.php?page=wpe-page-templates'; ?>">&larr; Back to all templates</a>
+            <a href="<?php echo get_admin_url() . 'admin.php?page=wpe-page-templates'; ?>">
+              <?php _e('&larr; Back to all templates'); ?>
+            </a>
           </p>
       </div>
 
@@ -745,9 +739,9 @@ function render_wpe_pti_admin(){
            UPDATE {$wpdb->postmeta}
            SET meta_value = 'default'
            WHERE 1=1
-           AND post_id = %d
-           AND meta_key = '_wp_page_template'
-           AND meta_value = %s
+             AND post_id = %d
+             AND meta_key = '_wp_page_template'
+             AND meta_value = %s
          ";
 
           # Update the data
@@ -756,38 +750,38 @@ function render_wpe_pti_admin(){
 
           ?>
           <div class="updated">
-            <p>Item has been detatched.</p>
+            <p><?php _e('Item has been detatched.'); ?></p>
           </div>
           <?php
           // return false;
         }
 
-          ///////////////////////////////////
-          # Handle row action: Detatch
-          ///////////////////////////////////
-          if(!empty($id) && in_array($action, array('delete')) && !is_numeric($id)){
+        ///////////////////////////////////
+        # Handle row action: Detatch all
+        ///////////////////////////////////
+        if(!empty($id) && in_array($action, array('delete')) && !is_numeric($id)){
 
-           # Setup sql query
-           global $wpdb;
-           $sql = "
-             UPDATE {$wpdb->postmeta}
-             SET meta_value = 'default'
-             WHERE 1=1
+         # Setup sql query
+         global $wpdb;
+         $sql = "
+           UPDATE {$wpdb->postmeta}
+           SET meta_value = 'default'
+           WHERE 1=1
              AND meta_key = '_wp_page_template'
              AND meta_value = %s
-           ";
+         ";
 
-            # Update the data
-            $prepared = $wpdb->prepare($sql, $id);
-            $wpdb->query($prepared);
+          # Update the data
+          $prepared = $wpdb->prepare($sql, $id);
+          $wpdb->query($prepared);
 
-            ?>
-            <div class="updated">
-              <p>Items have been detatched from this template.</p>
-            </div>
-            <?php
-            // return false;
-          }
+          ?>
+          <div class="updated">
+            <p>Items have been detatched from this template.</p>
+          </div>
+          <?php
+          // return false;
+        }
 
         //////////////////////
         # Display Table
@@ -810,30 +804,30 @@ function render_wpe_pti_admin(){
         $table_data->prepare_items($table_args);
 
       ?>
-      <form id="items-table" method="post">
+      <form id="items-table" class="wpe-pti" method="post">
 
-          <?php # Include nonce ?>
-          <?php // wp_nonce_field( 'wpe_pti_table', 'wpe_pti_table' ); ?>
+        <?php # Include nonce ?>
+        <?php // wp_nonce_field( 'wpe_pti_table', 'wpe_pti_table' ); ?>
 
-          <?php # Current page ?>
-          <input type="hidden" name="paged" value="<?php echo $paged; ?>" />
+        <?php # Current page ?>
+        <input type="hidden" name="paged" value="<?php echo $paged; ?>" />
 
-          <?php
+        <?php
 
-            //////////////////////
-            # Render the table
-            //////////////////////
-            $table_data->display();
+          //////////////////////
+          # Render the table
+          //////////////////////
+          $table_data->display();
 
-            /*
-              $table_data->display() calls the following:
-              WP_List_Table::display_rows_or_placeholder()
-              WP_List_Table::display_rows()
-              WP_List_Table::single_row()
-              WP_List_Table::single_row_columns()
-            */
+          /*
+            $table_data->display() calls the following:
+            WP_List_Table::display_rows_or_placeholder()
+            WP_List_Table::display_rows()
+            WP_List_Table::single_row()
+            WP_List_Table::single_row_columns()
+          */
 
-          ?>
+        ?>
 
       </form>
 
@@ -873,12 +867,12 @@ function render_wpe_pti_admin(){
      function get_columns(){
          $columns = array(
              'cb' => '<input type="checkbox" />', // Render a checkbox instead of text
-             'id' => 'ID',
+             // 'id' => 'ID',
              'thumbnail' => '',
              'title' => 'Post Title',
              'type' => 'Post Type',
              'status' => 'Post Status',
-             'date' => 'Post Date',
+             'date' => 'Publish Date',
          );
          return $columns;
      }
@@ -939,7 +933,7 @@ function render_wpe_pti_admin(){
            # Return the title column contents
            return sprintf('<a href="%1$s">%2$s</a> %3$s',
                /*$1%s*/ $edit_link,
-               /*$2%s*/ $post_title,
+               /*$2%s*/ $post_title . ' <small class="text-faded">(ID: '.$post_id.')</small>',
                /*$3%s*/ $this->row_actions($actions)
            );
 
@@ -958,7 +952,7 @@ function render_wpe_pti_admin(){
 
           # Only allow bulk actions for no default templates
           if(!empty($template_slug) && $template_slug != 'default'){
-            $actions['delete'] = 'Detach pages from template';
+            $actions['delete'] = __('Detach pages from template');
           }
 
           # Return the bulk actions
@@ -1009,8 +1003,8 @@ function render_wpe_pti_admin(){
                  UPDATE {$wpdb->postmeta}
                  SET meta_value = 'default'
                  WHERE 1=1
-                 AND post_id IN({$format})
-                 AND meta_key = '_wp_page_template'
+                   AND post_id IN({$format})
+                   AND meta_key = '_wp_page_template'
                ";
 
                 # Update the data
@@ -1021,7 +1015,7 @@ function render_wpe_pti_admin(){
                $ids = (is_array($ids)) ? implode(',', $ids) : $ids;
                echo '
                 <div class="updated">
-              			<p>The following post IDs have been deattached from this template: '.str_replace(',', ', ', $ids).'</a></p>
+              			<p>'.sprintf(__('The following post IDs have been deattached from this template: %s'), str_replace(',', ', ', $ids)).'</a></p>
             		</div>
                 ';
 
@@ -1155,9 +1149,9 @@ function render_wpe_pti_admin(){
           INNER JOIN {$wpdb->postmeta} AS _pm
             ON (_p.ID = _pm.post_id)
           WHERE 1=1
-          AND _p.post_type = %s
-          AND _pm.meta_key = '_wp_page_template'
-          AND _pm.meta_value = %s
+            AND _p.post_type = %s
+            AND _pm.meta_key = '_wp_page_template'
+            AND _pm.meta_value = %s
         ";
          $query_orderby = " ORDER BY {$orderby} {$order} ";
          $query_limit = " LIMIT {$per_page} OFFSET {$offset} ";
@@ -1197,6 +1191,9 @@ function render_wpe_pti_admin(){
 
 
 
+//////////////////////////////////
+# Post Type filter
+//////////////////////////////////
 add_action('admin_init', 'admin_set_post_type');
 function admin_set_post_type(){
   if(isset($_POST['set_post_type']) && $_POST['set_post_type'] != $_GET['post_type'] && !headers_sent()){
@@ -1219,6 +1216,194 @@ function admin_set_post_type(){
 
 
 
+//////////////////////////////////
+# Register Admin submenu item
+//////////////////////////////////
+add_action('admin_menu', 'add_menu_wpe_pti_settings');
+function add_menu_wpe_pti_settings(){
+  add_submenu_page('wpe-page-templates', 'Settings', 'Settings', 'activate_plugins', 'wpe_pti_settings', 'render_wpe_pti_settings');
+}
+
+
+//////////////////////////////////
+# Get Admin Settings defaults
+//////////////////////////////////
+function default_settings_wpe_pti($key = null){
+  $settings = array(
+    'extra_columns' => 1,
+    // 'extra_field' => '',
+  );
+  return (!empty($key)) ? $settings[$key] : $settings;
+}
+
+//////////////////////////////////
+# Get Admin Settings
+//////////////////////////////////
+function get_wpe_pti_settings($key = null){
+  $defaults = default_settings_wpe_pti();
+  $settings = get_option('wpe_pti_settings');
+  $settings = (empty($settings)) ? $defaults : $settings;
+  return (isset($key)) ? $settings[$key] : $settings;
+}
+
+//////////////////////////////////
+# Render Admin Settings page
+//////////////////////////////////
+function render_wpe_pti_settings(){
+
+  # Save settings
+  save_wpe_pti_settings();
+
+  # Get settings
+  $wpe_pti_settings = get_wpe_pti_settings();
+
+?>
+  <div class="wrap">
+
+      <?php
+        ////////////////////////
+        # Display Heading
+        ////////////////////////
+      ?>
+      <h2><?php _e('WPEngine Page Template Identifier Settings'); ?></h2>
+
+      <div class="notification-box">
+          <p><?php _e('Update parameters used to for the WPEngine Page Template Identifier here.'); ?></p>
+      </div>
+
+      <form class="settings-form" method="post">
+
+        <?php
+          /////////////////////////////////////
+          # Field: Enable extra columns
+          /////////////////////////////////////
+          $key = 'extra_columns';
+          $label = __('Add additonal column to reveal select templates in post type tables?');
+          $val = $wpe_pti_settings[$key];
+          $checked_on = (!empty($val)) ? 'checked="checekd"' : '';
+          $checked_off = (empty($val)) ? 'checked="checekd"' : '';
+        ?>
+        <div class="settings-row">
+          <label for="wpe_pti_settings[<?php echo $key; ?>]"><?php echo $label; ?></label>
+          <label class="radio-select">
+            <input type="radio" name="wpe_pti_settings[<?php echo $key; ?>]" id="wpe_pti_settings[<?php echo $key; ?>]-on" value="1" <?php echo $checked_on; ?> />
+            <span><?php _e('Yes'); ?></span>
+          </label>
+          <label class="radio-select">
+            <input type="radio" name="wpe_pti_settings[<?php echo $key; ?>]" id="wpe_pti_settings[<?php echo $key; ?>]-off" value="0" <?php echo $checked_off; ?> />
+            <span><?php _e('No'); ?></span>
+          </label>
+        </div><!-- .settings-row -->
+
+          <?php
+            /////////////////////////////////////
+            # Loop through additional fields
+            /////////////////////////////////////
+            /*
+            $fields = array(
+              'extra_field' => __('Extra field:'),
+            );
+
+            # Loop through fields
+            foreach($fields as $key => $label){
+              $val = $wpe_pti_settings[$key];
+            ?>
+            <div class="settings-row">
+              <label for="wpe_pti_settings[<?php echo $key; ?>]"><?php echo $label; ?></label>
+              <input type="text" name="wpe_pti_settings[<?php echo $key; ?>]" id="wpe_pti_settings[<?php echo $key; ?>]" value="<?php echo $val; ?>" />
+            </div><!-- .settings-row -->
+            <?php
+            }
+            */
+          ?>
+
+          <?php
+            ////////////////////////
+            # Form Submit
+            ////////////////////////
+          ?>
+          <?php # Include nonce ?>
+          <?php wp_nonce_field( 'save_wpe_pti_settings', 'save_wpe_pti_settings' ); ?>
+
+          <p class="submit">
+            <?php # Save button ?>
+            <?php // submit_button(); ?>
+            <input type="submit" name="submit" id="submit" class="button button-primary" value="<?php _e('Save Changes'); ?>" />
+            &nbsp;
+            <?php # Revert button ?>
+            <button type="submit" name="revert" value="1" class="button button-secondary button-large"><?php _e('Revert Settings'); ?></button>
+          </p>
+
+	    </form>
+    </div>
+  <?php
+  return;
+}
+
+//////////////////////////////////
+# Save Admin Settings page
+//////////////////////////////////
+function save_wpe_pti_settings(){
+
+  ///////////////////////////
+  # Validate submission
+  ///////////////////////////
+  $nonce = (isset($_POST['save_wpe_pti_settings'])) ? $_POST['save_wpe_pti_settings'] : '';
+  if( !wp_verify_nonce( $nonce, 'save_wpe_pti_settings' ) ) return false;
+
+  ////////////////////
+  # Revert settings
+  ////////////////////
+  if(isset($_REQUEST['revert'])){
+
+    # Get the defaults & update option
+    $defaults = default_settings_wpe_pti();
+    update_option('wpe_pti_settings', $defaults);
+
+    # Display message
+    echo '<div class="updated">
+			<p>'.__('Settings have been reverted successfully.').'</p>
+		</div>';
+    return;
+
+  }
+
+  ////////////////////
+  # Save settings
+  ////////////////////
+  $wpe_pti_settings = (isset($_POST['wpe_pti_settings'])) ? $_POST['wpe_pti_settings'] : '';
+  if(isset($wpe_pti_settings)){
+
+    # Sanitize values - https://stackoverflow.com/questions/41372892/
+    if(!empty($wpe_pti_settings)){
+      array_walk($wpe_pti_settings, function(&$value, &$key) {
+        $value[$key] = sanitize_text_field($value[$key]);
+      });
+    }
+
+    # Update option
+    update_option('wpe_pti_settings', $wpe_pti_settings);
+
+    # Display message
+    echo '<div class="updated">
+			<p>'.__('Settings have been saved successfully.').'</p>
+		</div>';
+    return;
+
+  ////////////////////
+  # Save error
+  ////////////////////
+  } else {
+
+    # Display message
+    echo '<div class="updated error">
+      <p>'.__('There was an error saving your settings.').'</p>
+    </div>';
+    return;
+
+  }
+
+}
 
 
 
@@ -1227,15 +1412,83 @@ function admin_set_post_type(){
 
 
 
+///////////////////////////////////////////////////////
+# Add an Extra column to display selected template
+///////////////////////////////////////////////////////
 
+add_action('init', 'wpe_pti_setup_columns');
+function wpe_pti_setup_columns(){
 
+  # Get settings
+  $wpe_pti_settings = get_wpe_pti_settings();
 
+  # Verify whether or not extra column settings is set
+  if(empty($wpe_pti_settings['extra_columns'])) return false;
 
+  # Get all public post types
+  $args = array(
+     'public'   => true,
+     '_builtin' => false
+  );
+  $post_types = get_post_types( $args, $output = 'objects', $operator = 'or' );
 
+  # Setup ignored post types
+  $ignore_types = array(
+    'attachment'
+  );
 
+  # Loop through the post types
+  if(!empty($post_types)){
+    foreach ( $post_types  as $post_type_obj ) {
+      $post_type = $post_type_obj->name;
+      if(!in_array($post_type, $ignore_types)){
 
+        add_filter( 'manage_'.$post_type.'_posts_columns', 'wpe_pti_filter_columns' );
+        add_action( 'manage_'.$post_type.'_posts_custom_column', 'wpe_pti_render_columns', 10, 2);
 
+      }
+    }
+  }
 
+}
+
+//////////////////////////////////
+# Filter columns to display
+//////////////////////////////////
+function wpe_pti_filter_columns($columns) {
+
+   # Split the columns into fragments
+   $fragmented_columns = array();
+   if(!empty($columns['comments'])){
+     $fragmented_columns['comments'] = $columns['comments'];
+     unset($columns['comments']);
+   }
+   if(!empty($columns['date'])){
+     $fragmented_columns['date'] = $columns['date'];
+     unset($columns['date']);
+   }
+
+   # Insert the new column
+   $columns['page_template'] = 'Page Template';
+
+   # Merge & return the fragmented columns
+   $columns = array_merge($columns, $fragmented_columns);
+   return $columns;
+
+}
+
+////////////////////////////////////////
+# Render data for specific columns
+////////////////////////////////////////
+function wpe_pti_render_columns( $column, $post_id ) {
+  global $post;
+  if($column == 'page_template') {
+    // $thumbnail = get_the_post_thumbnail( $post_id, array(80, 80) );
+    $template = get_page_template_slug( $post_id );
+    $template_link = sprintf('%sadmin.php?page=wpe-page-templates&template=%s&post_type=%s', get_admin_url(), urlencode($template), $post->post_type);
+    echo (!empty($template)) ? '<a href="'.$template_link.'">'.$template.'</a>' : __('default (no template)');
+  }
+}
 
 
 
