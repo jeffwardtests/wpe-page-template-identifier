@@ -8,8 +8,8 @@
  * @package    WPE_PTI
  * @subpackage WPE_PTI/includes
  */
-class WPE_PTI_Deactivator {
-	
+class WPE_PTI_Deactivation {
+
 	public static function deactivate() {
 
 	}

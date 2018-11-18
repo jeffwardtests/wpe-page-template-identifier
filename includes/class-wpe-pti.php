@@ -17,6 +17,9 @@ class WPE_PTI {
 	# Set the actions that's responsible for maintaining and registering all hooks for the plugin.
 	protected $actions;
 
+	# Set the settings for the plugin.
+	protected $settings;
+
 	# Set the unique identifier of this plugin.
 	protected $plugin_name;
 
@@ -64,14 +67,20 @@ class WPE_PTI {
 		# Include core actions & filters class
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wpe-pti-actions.php';
 
+		# Include admin settings class
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wpe-pti-admin-settings.php';
+
 		# Include admin actions & filters class
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wpe-pti-admin.php';
+
+		# Create an Settings instance
+		$this->settings = new WPE_PTI_Admin_Settings();
 
 		# Create an Actions instance
 		$this->actions = new WPE_PTI_Actions();
 
 	}
-
+	
 	//////////////////////////////
 	# Define admin hooks
 	//////////////////////////////
@@ -87,7 +96,13 @@ class WPE_PTI {
 		# Create an Admin instance
 		$plugin_admin = new WPE_PTI_Admin( $this->get_plugin_name(), $this->get_version() );
 
-		# Enqueue styles & scripts
+		# Action: admin init
+		$this->actions->add_action( 'admin_init', $plugin_admin, 'admin_init' );
+
+		# Action: admin menu
+		$this->actions->add_action( 'admin_menu', $plugin_admin, 'admin_menu' );
+
+		# Actions: Enqueue styles & scripts
 		$this->actions->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->actions->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 

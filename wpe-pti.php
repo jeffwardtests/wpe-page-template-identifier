@@ -22,17 +22,6 @@
 /////////////////////////////////////
 if( !defined( 'WPINC' ) ) die;
 
-
-
-#######################################
-
-# TEMPORARY: Add sandbox for playing & debugging
-require_once plugin_dir_path( __FILE__ ) . 'sandbox.php';
-
-#######################################
-
-
-
 ///////////////////////////
 # Current plugin version
 ///////////////////////////
@@ -43,7 +32,7 @@ define( 'PLUGIN_NAME_VERSION', '1.0.0' );
 ///////////////////////////
 function activate_wpe_pti() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wpe-pti-activation.php';
-	WPE_PTI_Activator::activate();
+	WPE_PTI_Activation::activate();
 }
 
 ///////////////////////////
@@ -51,7 +40,7 @@ function activate_wpe_pti() {
 ///////////////////////////
 function deactivate_wpe_pti() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wpe-pti-deactivation.php';
-	WPE_PTI_Deactivator::deactivate();
+	WPE_PTI_Deactivation::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_wpe_pti' );

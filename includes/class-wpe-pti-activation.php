@@ -8,8 +8,8 @@
  * @package    WPE_PTI
  * @subpackage WPE_PTI/includes
  */
-class WPE_PTI_Activator {
-	
+class WPE_PTI_Activation {
+
 	public static function activate() {
 
 	}
