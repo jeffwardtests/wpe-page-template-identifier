@@ -33,7 +33,7 @@ class WPE_PTI {
 	public function __construct() {
 
 		# Set the version number
-		$this->version = (defined( 'PLUGIN_NAME_VERSION')) ? PLUGIN_NAME_VERSION : '1.0.0';
+		$this->version = (defined( 'WPE_PTI_VERSION')) ? WPE_PTI_VERSION : '1.0.0';
 
 		# Set the plugin slug name
 		$this->plugin_name = 'wpe-pti';

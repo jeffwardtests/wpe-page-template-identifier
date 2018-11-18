@@ -25,7 +25,7 @@ if( !defined( 'WPINC' ) ) die;
 ///////////////////////////
 # Current plugin version
 ///////////////////////////
-define( 'PLUGIN_NAME_VERSION', '1.0.0' );
+define( 'WPE_PTI_VERSION', '1.0.0' );
 
 ///////////////////////////
 # Activation events
@@ -50,6 +50,17 @@ register_deactivation_hook( __FILE__, 'deactivate_wpe_pti' );
 # Include the core plugin class
 ///////////////////////////////////
 require plugin_dir_path( __FILE__ ) . 'includes/class-wpe-pti.php';
+
+///////////////////////////////////
+# Include plugin settings link
+///////////////////////////////////
+add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'wpe_pti_action_links' );
+function wpe_pti_action_links ( $links ) {
+	 $new_links = array(
+	 	'<a href="' . admin_url( 'admin.php?page=wpe-pti-settings' ) . '">'.__('Settings').'</a>',
+	 );
+	return array_merge( $links, $new_links );
+}
 
 //////////////////////////////
 # Initialize the plugin
