@@ -1,6 +1,5 @@
 # WPEngine Page Template Identifier
 * Contributors: Jeff Ward
-* Donate link: hi@hello-jeff.com
 * Tags: pages, templates, page templates
 * Requires at least: 4.9.8
 * Tested up to: 4.9.8
