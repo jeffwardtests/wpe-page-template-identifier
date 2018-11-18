@@ -39,7 +39,7 @@
        # Field: Enable extra columns
        /////////////////////////////////////
        $key = 'extra_columns';
-       $label = __('Add additonal column to reveal select templates in post type tables?');
+       $label = __('Show additonal column revealing selected templates for post tables?');
        $val = $settings[$key];
        $checked_on = (!empty($val)) ? 'checked="checekd"' : '';
        $checked_off = (empty($val)) ? 'checked="checekd"' : '';
